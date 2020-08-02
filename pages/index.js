@@ -1,66 +1,108 @@
 import Head from 'next/head'
+import { useEffect, useState } from 'react';
+import moment, { duration } from 'moment'
+
+const GOALTIME = "2020-08-19 16:00:00";
+
+function getRemainingTime() {
+
+  const goalDay = moment(GOALTIME);
+  const today = moment();
+
+  if(goalDay.isBefore(today)){
+    return {
+      showPassword: true
+    }
+  }
+
+  const clock = duration(goalDay.diff(today));
+
+  return {
+    showPassword: false,
+    days: clock.days(),
+    hours: clock.hours(),
+    minutes: clock.minutes(),
+    seconds: clock.seconds()
+  }
+}
+
+const getPassword = async (setPassword) => {
+  const res = await fetch("http://localhost:3000/api/getpassword");
+  const data = await res.json();
+  setPassword({ password: data.password, received: data.received });
+}
 
 export default function Home() {
+  const [time, setTime] = useState(getRemainingTime());
+  const [password, setPassword] = useState({ value: { password: "Počkej ještě chvíli :-)", received: false }});
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const comingTime = getRemainingTime();
+      setTime(comingTime);
+      if (comingTime.showPassword){
+        if (password.received){
+          clearInterval(timer);
+        }else{
+          getPassword(setPassword);
+        }
+      }
+    }, 1000);
+    return () => { clearInterval(timer) }
+  }, []);
+
+  const passwordComponent = () => {
+    if (time.showPassword) {
+      return (
+        <h1 className="title">
+          {password.password}
+        </h1>
+      );
+    } else {
+      return (
+      <h1 className="title">
+        {addZeros(time.days)}:{addZeros(time.hours)}:{addZeros(time.minutes)}:{addZeros(time.seconds)}
+      </h1>
+      );
+    }
+  }
+
   return (
     <div className="container">
       <Head>
-        <title>Create Next App</title>
+        <title>Překvapení</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
+        {passwordComponent()}
       </main>
 
       <footer>
         <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          href="https://safar.dev"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="logo" />
+          <div>Developed by <strong>safar.dev</strong></div>
         </a>
       </footer>
 
-      <style jsx>{`
-        .container {
+      <style jsx global>{`
+        html,
+        body {
+          padding: 0;
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+            sans-serif;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+                .container {
           min-height: 100vh;
           padding: 0 0.5rem;
           display: flex;
@@ -116,7 +158,7 @@ export default function Home() {
         .title {
           margin: 0;
           line-height: 1.15;
-          font-size: 4rem;
+          font-size: 6rem;
         }
 
         .title,
@@ -189,21 +231,14 @@ export default function Home() {
           }
         }
       `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
     </div>
   )
+}
+
+function addZeros(value) {
+  const str = String(value);
+  if (str.length < 2) {
+    return `0${value}`;
+  }
+  return value;
 }
