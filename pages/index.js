@@ -1,13 +1,14 @@
 import Head from 'next/head'
 import { useEffect, useState } from 'react';
-import moment, { duration } from 'moment'
+import moment from 'moment-timezone'
+import { duration } from 'moment'
 
 const GOALTIME = "2020-08-19 16:00:00";
 
 function getRemainingTime() {
 
-  const goalDay = moment(GOALTIME);
-  const today = moment();
+  const goalDay = moment.tz(GOALTIME, "Europe/Prague");
+  const today = moment.tz("Europe/Prague");
 
   if(goalDay.isBefore(today)){
     return {
