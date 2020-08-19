@@ -28,7 +28,7 @@ function getRemainingTime() {
 }
 
 const getPassword = async (setPassword) => {
-  const res = await fetch("http://localhost:3000/api/getpassword");
+  const res = await fetch("https://kristy.safar.dev/api/getpassword");
   const data = await res.json();
   setPassword({ password: data.password, received: data.received });
 }
