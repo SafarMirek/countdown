@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import moment from 'moment-timezone'
 import { duration } from 'moment'
 
-const GOALTIME = "2020-08-18 16:00:00";
+const GOALTIME = "2020-09-10 16:00:00";
 
 function getRemainingTime() {
 
